@@ -1,0 +1,9 @@
+ESSENZIA v0.2.1 PILOTO
+
+Paquete PWA para alojar como sitio estático en una dirección HTTPS. Sube estos archivos juntos y deja index.html en la raíz.
+
+Los datos se guardan automáticamente en el almacenamiento local de este navegador/dispositivo. No hay sincronización en la nube. Usa “Descargar respaldo” en Inicio y conserva el JSON en un lugar privado.
+
+Para instalar en iPhone: abre la dirección en Safari, toca Compartir, elige “Agregar a pantalla de inicio”, activa “Abrir como app” si aparece y toca Agregar.
+
+Esta versión inicia vacía. Los recordatorios push quedan para una fase posterior.

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f7f5f0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Essenzia" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./icon-180.png" />
+<title>Essenzia v0.2.1-piloto — PWA</title>
+<style>
+  :root{
+    --bg:#f7f5f0;--panel:#ffffff;--ink:#171716;--muted:#6e6b63;--line:#e6e1d7;
+    --gold:#a88345;--gold2:#d9c49a;--soft:#f1ece2;--danger:#a33a33;--ok:#2d6f55;
+    --shadow:0 10px 30px rgba(39,32,20,.08);--radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{min-height:100vh;display:grid;grid-template-columns:240px 1fr}
+  .sidebar{background:#121211;color:#fff;padding:24px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px}
+  .brand{letter-spacing:.28em;font-size:18px;font-weight:700;padding:8px 10px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .version{font-size:11px;letter-spacing:.06em;color:#bdb8ae;margin-top:5px}
+  .nav{display:grid;gap:7px}
+  .nav button{border:0;background:transparent;color:#c9c6bf;text-align:left;padding:12px 13px;border-radius:12px}
+  .nav button:hover,.nav button.active{background:#24231f;color:#fff}
+  .clock{margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding:16px 10px 0;color:#d9d5cb;font-size:13px}
+  .main{min-width:0;padding:28px 30px 92px}
+  .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+  h1{font-size:28px;margin:0 0 6px} h2{font-size:20px;margin:0} h3{font-size:16px;margin:0}
+  .sub{color:var(--muted);font-size:14px}
+  .btn{border:0;border-radius:12px;padding:11px 14px;background:#1c1c1a;color:#fff;font-weight:650}
+  .btn:hover{filter:brightness(1.07)}
+  .btn.secondary{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.danger{background:#fff4f2;color:var(--danger);border:1px solid #efd2cd}
+  .btn.sm{padding:8px 10px;font-size:13px;border-radius:10px}
+  .grid{display:grid;gap:16px}.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .metric{font-size:30px;font-weight:750;margin:7px 0 2px}.metric-label{color:var(--muted);font-size:13px}
+  .section{margin-top:22px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+  .list{display:grid;gap:10px}.rowitem{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border:1px solid var(--line);background:#fff;border-radius:14px}
+  .rowitem.clickable:hover{border-color:#cab58c;background:#fffefa}
+  .title{font-weight:680}.meta{font-size:13px;color:var(--muted);margin-top:3px}.small{font-size:12px;color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:var(--soft);font-size:12px;color:#514b40}
+  .pill.ok{background:#edf7f2;color:var(--ok)}.pill.warn{background:#fff6df;color:#7c5c17}.pill.off{background:#f3f2f0;color:#77736a}
+  .empty{padding:28px;border:1px dashed #cec8bc;border-radius:16px;text-align:center;color:var(--muted);background:#fbfaf7}
+  .search{display:flex;gap:10px;margin-bottom:14px}.search input{flex:1}
+  .field{display:grid;gap:6px}.field label{font-size:12px;font-weight:650;color:#5f5a50}.input,select,textarea{width:100%;border:1px solid #dcd6ca;background:#fff;border-radius:12px;padding:11px 12px;outline:none;color:var(--ink)}
+  .input:focus,select:focus,textarea:focus{border-color:#ae8e54;box-shadow:0 0 0 3px rgba(168,131,69,.12)}
+  textarea{resize:vertical;min-height:78px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}
+  .days{display:flex;flex-wrap:wrap;gap:8px}.day{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;min-width:42px}.day.active{background:#1d1d1b;color:#fff;border-color:#1d1d1b}
+  .notice{padding:12px 14px;border-radius:12px;background:#fff7e4;color:#745817;border:1px solid #ead8a9;font-size:13px}.notice.danger{background:#fff3f1;color:#8c322b;border-color:#efccc7}.notice.ok{background:#eef8f3;color:#28684e;border-color:#cde8da}
+  .tabs{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px}.tab.active{background:#1c1c1a;color:#fff;border-color:#1c1c1a}
+  .modal-layer{position:fixed;inset:0;background:rgba(15,14,12,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .modal-layer.open{display:flex}.modal{width:min(640px,100%);max-height:min(88vh,820px);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 30px 90px rgba(0,0,0,.25);padding:20px}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}.x{border:0;background:#f1efe9;border-radius:10px;width:36px;height:36px;font-size:20px}
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .toast{position:fixed;right:20px;bottom:20px;background:#1a1a18;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s;z-index:80}.toast.show{opacity:1;transform:none}
+  .client-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.kv{display:grid;grid-template-columns:120px 1fr;gap:7px 12px;font-size:14px}.kv .k{color:var(--muted)}
+  .calendar-wrap{overflow:auto}.cal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:7px;min-width:690px}.cal-dow{text-align:center;color:var(--muted);font-size:12px;padding:6px}.cal-day{min-height:108px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer}.cal-day.muted{opacity:.42}.cal-day.selected{outline:2px solid var(--gold);outline-offset:1px}.cal-num{font-size:12px;font-weight:700;margin-bottom:6px}.appt-dot{font-size:11px;background:var(--soft);padding:4px 6px;border-radius:7px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .eq{border:1px solid var(--line);border-radius:13px;padding:12px;margin-top:8px;background:#fcfbf8}.loc{border:1px solid var(--line);border-radius:15px;padding:14px;margin-top:10px}
+  .split{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.muted{color:var(--muted)}
+  .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.hr{height:1px;background:var(--line);margin:16px 0}
+  .bottom-nav{display:none}
+  .audit-badge{font-size:11px;background:#efe6d2;color:#6b5325;border:1px solid #dbc79f;padding:4px 7px;border-radius:999px;margin-left:6px}
+
+  /* v0.1.8.4: fallback CSS-only navigation for viewers that block JavaScript */
+  .fallback-tabs{position:absolute;opacity:0;pointer-events:none}
+  .fallback-screen{display:none}
+  #fb-home:checked ~ .app #fallback-home,
+  #fb-clients:checked ~ .app #fallback-clients,
+  #fb-calendar:checked ~ .app #fallback-calendar,
+  #fb-aromas:checked ~ .app #fallback-aromas{display:block}
+  .fallback-only .compat-note{margin-bottom:16px}
+  .nav label,.bottom-nav label{cursor:pointer}
+  .nav label{display:block;color:#c9c6bf;text-align:left;padding:12px 13px;border-radius:12px}
+  .nav label:hover{background:#24231f;color:#fff}
+  .bottom-nav label{border:0;background:transparent;padding:8px 4px;font-size:11px;color:#736f67;text-align:center}
+  .fallback-form{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+  .fallback-form summary{cursor:pointer;font-weight:700}
+  .fallback-disabled{opacity:.58}
+
+  @media(max-width:860px){
+    .app{display:block}.sidebar{display:none}.main{padding:20px 14px 88px}.grid.cols-3,.grid.cols-2,.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.topbar{align-items:center}h1{font-size:24px}.kv{grid-template-columns:98px 1fr}
+    .bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:30;padding:7px max(8px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+    .bottom-nav button,.bottom-nav label{border:0;background:transparent;padding:8px 4px;font-size:11px;color:#736f67}.bottom-nav button.active{color:#121211;font-weight:750}
+    .modal{padding:17px}.actions{position:sticky;bottom:-20px;background:#fff;padding:12px 0 4px}
+    .calendar-wrap{overflow:hidden;padding:12px 8px}
+    .cal-grid{min-width:0;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+    .cal-dow{font-size:10px;padding:4px 0}
+    .cal-day{min-width:0;min-height:66px;padding:5px 3px;border-radius:8px}
+    .cal-num{font-size:11px;margin-bottom:3px}
+    .appt-dot{font-size:9px;padding:2px 3px;border-radius:5px;line-height:1.2}
+    .cal-head h2{font-size:16px;text-align:center}
+  }
+
+
+  /* v0.1.8.6 — iPhone-first application UX */
+  html{height:100%;-webkit-text-size-adjust:100%}
+  body{min-height:100%;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+  button,.rowitem.clickable,.cal-day,.day{touch-action:manipulation}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(168,131,69,.24);outline-offset:2px}
+  .quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .quick-action{border:1px solid var(--line);background:#fff;border-radius:16px;min-height:86px;padding:13px 10px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;color:var(--ink)}
+  .quick-action .qa-icon{font-size:22px;line-height:1}.quick-action .qa-label{font-size:13px;font-weight:720}.quick-action .qa-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .today-card{background:#191917;color:#fff;border-color:#191917}.today-card .meta,.today-card .small{color:#d9d6ce}.today-card .pill{background:#34332f;color:#fff}
+  .today-date{text-transform:capitalize;font-size:13px;color:#ddd8ce;margin-bottom:5px}.today-title{font-size:24px;font-weight:780;letter-spacing:-.02em}
+  .mini-stats{display:flex;gap:9px;margin-top:12px}.mini-stat{flex:1;border-radius:13px;background:rgba(255,255,255,.08);padding:10px}.mini-stat b{display:block;font-size:18px}.mini-stat span{font-size:11px;color:#ddd8ce}
+  .appointment-card{align-items:flex-start}.appointment-main{min-width:0;flex:1}.appointment-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:270px}.appointment-actions .service-action{grid-column:1/-1}
+  .nav-ico{width:22px;height:22px;display:grid;place-items:center;font-size:20px;line-height:1}.nav-label{display:block}
+  .save-status{margin:0 0 12px;padding:8px 11px;border-radius:10px;background:#eef8f3;color:#28684e;font-size:12px}.save-warning{margin:0 0 12px}.backup-card h2{font-size:17px}.backup-card p{margin:8px 0 12px}.backup-actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.backup-card .small{line-height:1.4}
+  .modal-drag{display:none;width:38px;height:5px;border-radius:999px;background:#d4d1ca;margin:1px auto 12px}
+  body.modal-open{overflow:hidden}
+  .ios-back{display:none}
+  .client-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .ios-section-label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 4px 8px}
+
+  @media(max-width:860px){
+    :root{--bg:#f2f2f7;--panel:#fff;--line:#dedee3;--soft:#f2f2f7;--shadow:none;--radius:14px}
+    html,body{background:var(--bg)}
+    .main{padding:calc(8px + env(safe-area-inset-top)) 12px calc(92px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;min-height:100dvh}
+    .topbar{position:sticky;top:0;z-index:18;margin:-8px -12px 14px;padding:10px 14px 10px;background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(60,60,67,.08);align-items:center}
+    .topbar h1{font-size:28px;line-height:1.08;letter-spacing:-.035em}.topbar .sub{font-size:12px;margin-top:4px;max-width:255px}.audit-badge{display:none}
+    .topbar>.btn{padding:9px 12px;border-radius:12px;white-space:nowrap;font-size:13px;min-height:40px}
+    .btn{min-height:44px;border-radius:12px;padding:10px 14px}.btn.sm{min-height:38px;padding:8px 11px}.btn.ghost,.btn.secondary{background:#fff}
+    .card{border-radius:14px;padding:15px;box-shadow:none}.section{margin-top:18px}.section-head{margin:0 2px 9px}.section-head h2{font-size:17px}
+    .grid.cols-3{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid.cols-3>.card:last-child{grid-column:1/-1}
+    .metric{font-size:24px}.metric-label{font-size:12px}
+    .quick-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.quick-action{min-height:94px;padding:12px 9px;border-radius:14px}.quick-action .qa-label{font-size:12px}.quick-action .qa-sub{display:none}
+    .today-card{padding:17px}.today-title{font-size:26px}.mini-stats{gap:7px}.mini-stat{padding:9px}.mini-stat b{font-size:16px}
+    .list{gap:8px}.rowitem{min-height:58px;padding:12px 13px;border-radius:13px;box-shadow:none}.rowitem.clickable:active,.cal-day:active,.quick-action:active{transform:scale(.99);background:#f7f7f9}.title{font-size:15px}.meta{font-size:12px;line-height:1.38}.small{font-size:11px;line-height:1.35}
+    .search{position:sticky;top:76px;z-index:14;background:var(--bg);padding:0 0 8px;margin-bottom:3px}.search .input{background:#e4e4e9;border:0;border-radius:11px}
+    .input,select,textarea{font-size:16px;min-height:46px;border-radius:12px;padding:11px 12px;background:#fff}.field label{font-size:12px}.formgrid{gap:13px}.days{gap:6px}.day{min-width:42px;min-height:42px;padding:8px}
+    .client-head{display:block}.client-head>.btn{width:100%;margin-top:14px}.kv{grid-template-columns:88px 1fr;gap:9px 10px;font-size:13px}.loc{background:#fff;border-radius:14px;padding:13px}.eq{background:#f7f7f9;border-color:#e7e7eb}
+    .split{gap:8px}.split>.inline{justify-content:flex-end}.client-actions .btn{flex:1}
+    .calendar-wrap{padding:12px 7px;border-radius:16px;background:#fff}.cal-head{margin-bottom:8px}.cal-head h2{font-size:17px;text-transform:capitalize}.cal-head>.btn{width:42px;padding:0}.cal-head>div .btn{min-height:30px;height:30px;padding:4px 10px;border:0;background:#f2f2f7}
+    .cal-grid{gap:2px}.cal-dow{font-size:10px;color:#8e8e93;font-weight:650}.cal-day{min-height:54px;border:0;background:transparent;border-radius:10px;text-align:center;padding:4px 2px}.cal-day.selected{outline:0;background:#1c1c1a;color:#fff}.cal-day.selected .appt-dot{background:#fff}.cal-day.muted{opacity:.32}.cal-num{font-size:12px;margin:0 auto 3px;width:25px;height:25px;display:grid;place-items:center;border-radius:999px}.cal-day:not(.selected):has(.appt-dot) .cal-num{font-weight:800}.appt-dot{display:inline-block;width:5px;height:5px;min-width:5px;padding:0;margin:1px;border-radius:50%;background:var(--gold);font-size:0;vertical-align:top}.cal-day .small{font-size:0}.cal-day .small:after{content:'•••';font-size:8px;letter-spacing:1px}
+    .appointment-card{display:block}.appointment-actions{grid-template-columns:1fr 1fr;min-width:0;width:100%;margin-top:11px}.appointment-actions .btn{width:100%}.appointment-actions .service-action{grid-column:1/-1;background:#1c1c1a;color:#fff}
+    .modal-layer{align-items:flex-end;justify-content:center;padding:0;background:rgba(0,0,0,.34)}.modal-layer.open{display:flex}.modal{width:100%;max-width:560px;max-height:94dvh;border-radius:24px 24px 0 0;padding:9px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -16px 50px rgba(0,0,0,.16);overscroll-behavior:contain}.modal-drag{display:block}.modal-head{position:sticky;top:-9px;z-index:4;background:#fff;padding:7px 0 10px;margin-bottom:10px;border-bottom:1px solid #eeeef1}.modal-head h2{font-size:20px}.modal-head .sub{font-size:12px}.x{width:34px;height:34px;border-radius:999px;background:#ededf0;color:#666;font-size:21px}.actions{position:sticky;bottom:calc(-14px - env(safe-area-inset-bottom));z-index:5;margin:18px -16px 0;padding:11px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #eeeef1;display:grid;grid-template-columns:1fr 1fr}.actions .btn{width:100%}.actions .btn:only-child{grid-column:1/-1}
+    .toast{left:16px;right:16px;bottom:calc(82px + env(safe-area-inset-bottom));text-align:center;border-radius:14px;padding:13px 15px}
+    .bottom-nav{grid-template-columns:repeat(4,1fr);padding:6px max(8px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:rgba(249,249,249,.94);border-top:1px solid rgba(60,60,67,.18);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);min-height:62px}
+    .bottom-nav button,.bottom-nav label{min-height:49px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:#77777d}.bottom-nav button.active{color:#111;font-weight:700}.bottom-nav .nav-ico{font-size:20px;height:22px}.bottom-nav .nav-label{font-size:10px}
+    .notice{font-size:12px;line-height:1.4}.fallback-only .topbar{position:static;margin:0 0 14px;padding:0;background:none;border:0}.fallback-only .compat-note{margin-top:6px}
+  }
+
+  @media(max-width:365px){
+    .main{padding-left:10px;padding-right:10px}.topbar{margin-left:-10px;margin-right:-10px}.topbar h1{font-size:25px}.topbar .sub{display:none}.quick-action{padding:10px 7px}.quick-action .qa-label{font-size:11px}.kv{grid-template-columns:76px 1fr}.cal-day{min-height:50px}.cal-num{width:23px;height:23px}
+  }
+
+</style>
+</head>
+<body>
+<input class="fallback-tabs" type="radio" name="fallback-view" id="fb-home" checked>
+<input class="fallback-tabs" type="radio" name="fallback-view" id="fb-clients">
+<input class="fallback-tabs" type="radio" name="fallback-view" id="fb-calendar">
+<input class="fallback-tabs" type="radio" name="fallback-view" id="fb-aromas">
+<div class="app">
+  <aside class="sidebar">
+    <div><div class="brand">ESSENZIA</div><div class="version">v0.2.1-piloto · PWA</div></div>
+    <div class="nav" id="sideNav">
+      <label for="fb-home">Inicio</label><label for="fb-clients">Clientes</label><label for="fb-calendar">Agenda</label><label for="fb-aromas">Aromas</label>
+    </div>
+    <div class="clock" id="clockSide">Vista compatible</div>
+  </aside>
+  <main class="main fallback-only" id="main">
+    <section class="fallback-screen" id="fallback-home">
+      <div class="notice compat-note"><b>Modo de vista compatible.</b> Este visor no está ejecutando JavaScript. Puedes revisar y navegar la interfaz aquí; crear, editar y guardar datos requiere abrir el mismo HTML en un navegador que permita scripts.</div>
+      <div class="topbar"><div><h1>Inicio <span class="audit-badge">v0.2.1-piloto</span></h1><div class="sub">Resumen operativo de Essenzia</div></div></div>
+      <div class="grid cols-3">
+        <div class="card"><div class="metric-label">Clientes</div><div class="metric">0</div><label class="btn ghost sm" for="fb-clients">Ver clientes</label></div>
+        <div class="card"><div class="metric-label">Aromas activos</div><div class="metric">0</div><label class="btn ghost sm" for="fb-aromas">Ver aromas</label></div>
+        <div class="card"><div class="metric-label">Citas</div><div class="metric">0</div><label class="btn ghost sm" for="fb-calendar">Ver calendario</label></div>
+      </div>
+      <div class="section card"><h3>Regla de integridad</h3><div class="meta">Editar cliente, contacto, locación, equipo o aroma <b>no crea una visita</b>. Una visita solo nace desde “Registrar servicio”.</div></div>
+    </section>
+
+    <section class="fallback-screen" id="fallback-clients">
+      <div class="notice compat-note"><b>Clientes independientes de visitas.</b> Esta pantalla es navegable en vista previa; el visor de archivos bloquea JavaScript, por lo que guardar solo funciona al abrir la app en un navegador que ejecute scripts.</div>
+      <div class="topbar"><div><h1>Clientes</h1><div class="sub">Datos del cliente separados del historial de servicios</div></div></div>
+      <div class="list">
+        <div class="empty">Aún no hay clientes. Agrega el primero desde la app funcional.</div>
+      </div>
+      <details class="card fallback-form"><summary>+ Nuevo cliente</summary>
+        <div class="formgrid" style="margin-top:12px"><div class="field"><label>Nombre *</label><input class="input" placeholder="Nombre del cliente"></div><div class="field"><label>Contacto</label><input class="input" placeholder="Persona de contacto"></div><div class="field"><label>Teléfono</label><input class="input" placeholder="Teléfono"></div><div class="field"><label>Email</label><input class="input" type="email" placeholder="Email"></div><div class="field span2"><label>Dirección</label><input class="input" placeholder="Dirección"></div></div>
+        <div class="actions"><button class="btn fallback-disabled" disabled>Guardar cliente</button></div>
+        <div class="small">En el modo funcional, guardar o editar estos datos no registra una visita.</div>
+      </details>
+    </section>
+
+    <section class="fallback-screen" id="fallback-calendar">
+      <div class="notice compat-note"><b>Calendario completo.</b> En este visor sin JavaScript puedes revisar el diseño; crear, reagendar y guardar citas requiere abrir la app en un navegador.</div>
+      <div class="topbar"><div><h1>Agenda</h1><div class="sub">Vista mensual · aún sin citas</div></div></div>
+      <div class="card calendar-wrap">
+        <div class="cal-head"><span class="btn ghost sm fallback-disabled">←</span><h2>Agenda vacía</h2><span class="btn ghost sm fallback-disabled">→</span></div>
+        <div class="empty">Las fechas y citas se muestran en la app funcional.</div>
+      </div>
+      <div class="section card"><div class="meta">En modo funcional: tocar un día selecciona su agenda; cada cita permite <b>Editar / Reagendar</b>, registrar servicio o cancelar.</div></div>
+    </section>
+
+    <section class="fallback-screen" id="fallback-aromas">
+      <div class="notice compat-note"><b>Aromas independientes.</b> Se pueden administrar sin generar visitas. El guardado funciona en el modo funcional con JavaScript; esta vista previa solo permite revisar la interfaz.</div>
+      <div class="topbar"><div><h1>Aromas</h1><div class="sub">Catálogo escalable e independiente de clientes y servicios</div></div></div>
+      <div class="empty">Aún no hay aromas. Agrégalos desde la app funcional.</div>
+      <details class="card fallback-form"><summary>+ Nuevo aroma</summary><div class="formgrid" style="margin-top:12px"><div class="field"><label>Nombre *</label><input class="input" placeholder="Nombre del aroma"></div><div class="field"><label>Notas</label><input class="input" placeholder="Descripción breve"></div></div><div class="actions"><button class="btn fallback-disabled" disabled>Guardar aroma</button></div></details>
+    </section>
+  </main>
+</div>
+<nav class="bottom-nav" id="bottomNav"><label for="fb-home">Inicio</label><label for="fb-clients">Clientes</label><label for="fb-calendar">Agenda</label><label for="fb-aromas">Aromas</label></nav>
+<div class="modal-layer" id="modalLayer" role="presentation" onclick="if(event.target===this) closeModal()"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<input id="backupFileInput" type="file" accept="application/json,.json" hidden onchange="app.restoreBackup(event)">
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY='essenzia_v0_2_1_pilot';
+  let persistenceAvailable=true;
+  let memorySnapshot=null;
+  const DAY_KEYS=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const DAY_LABEL={MON:'Lu',TUE:'Ma',WED:'Mi',THU:'Ju',FRI:'Vi',SAT:'Sá',SUN:'Do'};
+  const DAY_FULL={MON:'lunes',TUE:'martes',WED:'miércoles',THU:'jueves',FRI:'viernes',SAT:'sábado',SUN:'domingo'};
+  const navItems=[['home','Inicio'],['clients','Clientes'],['calendar','Agenda'],['aromas','Aromas']];
+  let state=loadState();
+  let route={view:'home'};
+  let modalCleanup=null;
+  let calCursor=new Date(); calCursor.setDate(1); calCursor.setHours(0,0,0,0);
+  let calSelected=dateKey(new Date());
+
+  function uid(prefix){return prefix+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function dateKey(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}
+  function parseDateKey(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12,0,0,0)}
+  function fmtDate(s){if(!s)return '—';return parseDateKey(s).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}
+  function dayKeyFromDate(s){const d=typeof s==='string'?parseDateKey(s):new Date(s);return ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]}
+  function todayKey(){return dateKey(new Date())}
+  function seed(){return {version:'0.2.1-piloto',clients:[],aromas:[],appointments:[],visits:[],meta:{createdAt:new Date().toISOString()}}}
+  function shiftDate(base,days){const d=parseDateKey(base);d.setDate(d.getDate()+days);return dateKey(d)}
+  function storageRead(){
+    if(!persistenceAvailable)return memorySnapshot;
+    try{return localStorage.getItem(STORAGE_KEY)}catch(e){persistenceAvailable=false;console.warn('Persistencia local no disponible; usando memoria temporal.',e);return memorySnapshot}
+  }
+  function storageWrite(value){
+    memorySnapshot=value;
+    if(!persistenceAvailable)return false;
+    try{localStorage.setItem(STORAGE_KEY,value);return true}catch(e){persistenceAvailable=false;console.warn('No se pudo guardar en almacenamiento local; los cambios seguirán disponibles durante esta sesión.',e);return false}
+  }
+  function loadState(){
+    try{const raw=storageRead();if(raw){const s=JSON.parse(raw);normalizeState(s);return s}}catch(e){console.warn('No se pudo recuperar el estado guardado.',e)}
+    const s=seed();storageWrite(JSON.stringify(s));return s;
+  }
+  function normalizeState(s){s.clients ||= [];s.aromas ||= [];s.appointments ||= [];s.visits ||= [];for(const c of s.clients){c.openDays ||= [];c.locations ||= [];for(const l of c.locations){l.equipments ||= []}}}
+  function saveState(){state.version='0.2.1-piloto';return storageWrite(JSON.stringify(state))}
+  function client(id){return state.clients.find(x=>x.id===id)}
+  function aroma(id){return state.aromas.find(x=>x.id===id)}
+  function locationOf(c,id){return c?.locations.find(x=>x.id===id)}
+  function equipmentOf(l,id){return l?.equipments.find(x=>x.id===id)}
+  function visitCountForClient(id){return state.visits.filter(v=>v.clientId===id).length}
+  function nextOpenDate(c,from){if(!c || !c.openDays.length)return null;let d=parseDateKey(from);for(let i=0;i<14;i++){if(c.openDays.includes(dayKeyFromDate(d)))return dateKey(d);d.setDate(d.getDate()+1)}return null}
+  function isOpenOn(c,date){return !c?.openDays?.length || c.openDays.includes(dayKeyFromDate(date))}
+  function upcomingAppointments(){return state.appointments.filter(a=>a.status==='SCHEDULED' && a.date>=todayKey()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}
+  function nav(view,params={}){route={view,...params};render();window.scrollTo(0,0)}
+  function navIcon(k){return {home:'⌂',clients:'◎',calendar:'□',aromas:'✦'}[k]||'•'}
+  function renderNav(){
+    const active=route.view==='client'?'clients':route.view;
+    document.getElementById('sideNav').innerHTML=navItems.map(([k,l])=>`<button class="${active===k?'active':''}" onclick="app.nav('${k}')">${l}</button>`).join('');
+    document.getElementById('bottomNav').innerHTML=navItems.map(([k,l])=>`<button aria-label="${l}" class="${active===k?'active':''}" onclick="app.nav('${k}')"><span class="nav-ico">${navIcon(k)}</span><span class="nav-label">${l}</span></button>`).join('');
+  }
+  function render(){renderNav();const main=document.getElementById('main');if(route.view==='home')main.innerHTML=viewHome();else if(route.view==='clients')main.innerHTML=viewClients();else if(route.view==='client')main.innerHTML=viewClient(route.clientId);else if(route.view==='calendar')main.innerHTML=viewCalendar();else if(route.view==='aromas')main.innerHTML=viewAromas();else main.innerHTML=viewHome();const status=document.createElement('div');status.className=persistenceAvailable?'save-status':'notice danger save-warning';status.setAttribute('role','status');status.innerHTML=persistenceAvailable?'✓ Guardado automáticamente en este dispositivo · no se sincroniza con otros teléfonos.':'<b>No se pudo guardar.</b> Los cambios recientes solo están en esta sesión. No cierres la app; libera espacio o abre la app desde Safari y vuelve a intentar.';main.prepend(status)}
+  function pageHead(title,sub,action=''){return `<div class="topbar"><div><h1>${esc(title)}</h1><div class="sub">${esc(sub)}</div></div>${action}</div>`}
+  function viewHome(){
+    const up=upcomingAppointments();
+    const today=up.filter(a=>a.date===todayKey());
+    const dateLabel=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+    const next=up[0];
+    return `${pageHead('Essenzia','Operación diaria',`<button class="btn" onclick="app.openAppointment()">+ Cita</button>`)}
+      <div class="card today-card"><div class="today-date">${esc(dateLabel)}</div><div class="today-title">${today.length?`${today.length} cita${today.length===1?'':'s'} hoy`:'Día despejado'}</div><div class="meta" style="margin-top:5px">${next?`Próxima: ${esc(next.time||'sin hora')} · ${esc(client(next.clientId)?.name||'Cliente')}`:'No hay citas pendientes.'}</div><div class="mini-stats"><div class="mini-stat"><b>${state.clients.length}</b><span>clientes</span></div><div class="mini-stat"><b>${state.aromas.filter(a=>a.active).length}</b><span>aromas</span></div><div class="mini-stat"><b>${up.length}</b><span>pendientes</span></div></div></div>
+      <div class="section"><div class="ios-section-label">Acciones rápidas</div><div class="quick-actions">
+        <button class="quick-action" onclick="app.openAppointment()"><span class="qa-icon">＋</span><span><span class="qa-label">Nueva cita</span><span class="qa-sub">Agendar servicio</span></span></button>
+        <button class="quick-action" onclick="app.openClient()"><span class="qa-icon">◎</span><span><span class="qa-label">Cliente</span><span class="qa-sub">Agregar contacto</span></span></button>
+        <button class="quick-action" onclick="app.openAroma()"><span class="qa-icon">✦</span><span><span class="qa-label">Aroma</span><span class="qa-sub">Añadir catálogo</span></span></button>
+      </div></div>
+      <div class="section"><div class="section-head"><h2>${today.length?'Agenda de hoy':'Próximas citas'}</h2><button class="btn ghost sm" onclick="app.nav('calendar')">Ver agenda</button></div><div class="list">${(today.length?today:up.slice(0,4)).map(a=>appointmentRow(a)).join('') || `<div class="empty">No hay citas por atender.</div>`}</div></div>
+      <section class="section card backup-card"><h2>Respaldo de agenda</h2><p class="meta">Los cambios se guardan automáticamente en este teléfono. Exporta un respaldo con regularidad para poder recuperarlo si cambias de equipo o borras los datos del navegador.</p><div class="backup-actions"><button class="btn secondary" onclick="app.exportBackup()">Descargar respaldo</button><button class="btn ghost" onclick="app.chooseBackup()">Restaurar respaldo</button></div><div class="small">El archivo incluye nombres, teléfonos, direcciones y notas de clientes. Guárdalo en un lugar privado.</div></section>`;
+  }
+  function appointmentRow(a){const c=client(a.clientId);const ar=aroma(a.plannedAromaId);return `<div class="rowitem clickable" onclick="app.nav('calendar');app.selectCal('${a.date}')"><div><div class="title">${esc(a.time||'Sin hora')} · ${esc(c?.name||'Cliente eliminado')}</div><div class="meta">${fmtDate(a.date)} · ${esc(a.type)}${ar?' · '+esc(ar.name):''}</div></div><span>›</span></div>`}
+  function viewClients(){
+    const q=(route.q||'').toLowerCase();const list=state.clients.filter(c=>[c.name,c.contactName,c.phone,c.email,c.address].join(' ').toLowerCase().includes(q));
+    return `${pageHead('Clientes','Contactos y equipos',`<button class="btn" onclick="app.openClient()">+ Nuevo</button>`)}
+      <div class="search"><input class="input" placeholder="Buscar" value="${esc(route.q||'')}" oninput="app.setClientSearch(this.value)"></div>
+      <div class="list">${list.map(c=>`<div class="rowitem clickable" onclick="app.nav('client',{clientId:'${c.id}'})"><div><div class="title">${esc(c.name)}</div><div class="meta">${esc(c.contactName||c.phone||'Sin contacto')} · ${c.locations.length} locación${c.locations.length===1?'':'es'}</div></div><span>›</span></div>`).join('')||`<div class="empty">No encontramos clientes.</div>`}</div>`;
+  }
+  function setClientSearch(v){route.q=v;render()}
+  function clientInfo(c){return `<div class="kv"><div class="k">Contacto</div><div>${esc(c.contactName||'—')}</div><div class="k">Teléfono</div><div>${esc(c.phone||'—')}</div><div class="k">Email</div><div>${esc(c.email||'—')}</div><div class="k">Dirección</div><div>${esc(c.address||'—')}</div><div class="k">Atención</div><div>${c.openDays.length?c.openDays.map(d=>DAY_LABEL[d]).join(', '):'Sin restricción configurada'}</div><div class="k">Notas</div><div>${esc(c.notes||'—')}</div></div>`}
+  function viewClient(id){
+    const c=client(id);if(!c)return `${pageHead('Cliente no encontrado','')}<div class="empty"><button class="btn" onclick="app.nav('clients')">Volver</button></div>`;
+    const visits=state.visits.filter(v=>v.clientId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+    return `${pageHead(c.name,'Ficha del cliente',`<button class="btn secondary" onclick="app.nav('clients')">‹ Volver</button>`)}
+      <div class="client-actions"><button class="btn" onclick="app.openAppointment('${c.id}')">+ Cita</button><button class="btn secondary" onclick="app.openService('${c.id}')">Registrar servicio</button></div>
+      <div class="section"><div class="ios-section-label">Datos</div><div class="client-head card"><div>${clientInfo(c)}</div><button class="btn ghost sm" onclick="app.openClient('${c.id}')">Editar datos</button></div></div>
+      <div class="section"><div class="section-head"><h2>Locaciones y equipos</h2><button class="btn secondary sm" onclick="app.openLocation('${c.id}')">+ Locación</button></div>
+        ${c.locations.length?c.locations.map(l=>locationCard(c,l)).join(''):`<div class="empty">Aún no hay locaciones.</div>`}
+      </div>
+      <div class="section"><div class="section-head"><h2>Historial</h2><span class="small">${visits.length} visita${visits.length===1?'':'s'}</span></div>
+        <div class="list">${visits.map(v=>visitRow(v)).join('')||`<div class="empty">Sin visitas registradas.</div>`}</div>
+      </div>`;
+  }
+  function locationCard(c,l){
+    return `<div class="loc"><div class="split"><div><div class="title">${esc(l.name)}</div><div class="meta">${esc(l.address||'Sin dirección específica')}</div></div><div class="inline"><button class="btn ghost sm" onclick="app.openLocation('${c.id}','${l.id}')">Editar</button><button class="btn danger sm" onclick="app.removeLocation('${c.id}','${l.id}')">Eliminar</button></div></div>
+      ${l.equipments.map(e=>equipmentCard(c,l,e)).join('')||`<div class="small" style="margin-top:10px">Sin equipos.</div>`}
+      <div style="margin-top:10px"><button class="btn secondary sm" onclick="app.openEquipment('${c.id}','${l.id}')">+ Equipo</button></div></div>`;
+  }
+  function equipmentCard(c,l,e){const last=aroma(e.lastInstalledAromaId);const planned=aroma(e.plannedAromaId);return `<div class="eq"><div class="split"><div><div class="title">${esc(e.label||e.type)}</div><div class="meta">${esc(e.type)} · Último aroma: ${last?esc(last.name):'—'} · ${e.lastInstalledAt?fmtDate(e.lastInstalledAt):'sin instalación'}</div>${planned?`<div class="small">Próximo aroma previsto: ${esc(planned.name)}</div>`:''}</div><button class="btn ghost sm" onclick="app.openEquipment('${c.id}','${l.id}','${e.id}')">Editar</button></div></div>`}
+  function visitRow(v){const c=client(v.clientId);const l=locationOf(c,v.locationId);const e=equipmentOf(l,v.equipmentId);const ar=aroma(v.aromaId);return `<div class="rowitem"><div><div class="title">${esc(v.type)} · ${fmtDate(v.date)}</div><div class="meta">${esc(l?.name||'Sin locación')}${e?' · '+esc(e.label||e.type):''}${ar?' · '+esc(ar.name):''}${v.time?' · '+esc(v.time):''}</div>${v.notes?`<div class="small">${esc(v.notes)}</div>`:''}</div><span class="pill ok">Visita</span></div>`}
+  function viewAromas(){
+    const arr=[...state.aromas].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+    return `${pageHead('Aromas','Catálogo de esencias',`<button class="btn" onclick="app.openAroma()">+ Nuevo</button>`)}
+      <div class="list">${arr.map(a=>`<div class="rowitem clickable" onclick="app.openAroma('${a.id}')"><div><div class="title">${esc(a.name)}</div><div class="meta">${esc(a.notes||'Sin notas')}</div></div><div class="inline"><span class="pill ${a.active?'ok':'off'}">${a.active?'Activo':'Inactivo'}</span><span>›</span></div></div>`).join('')||`<div class="empty">No hay aromas. Agrega el primero.</div>`}</div>`;
+  }
+  function viewCalendar(){
+    const y=calCursor.getFullYear(),m=calCursor.getMonth();const first=new Date(y,m,1);const startOffset=(first.getDay()+6)%7;const gridStart=new Date(y,m,1-startOffset);
+    let cells='';for(let i=0;i<42;i++){const d=new Date(gridStart);d.setDate(gridStart.getDate()+i);const dk=dateKey(d);const aps=state.appointments.filter(a=>a.date===dk && a.status==='SCHEDULED');cells+=`<div class="cal-day ${d.getMonth()!==m?'muted':''} ${dk===calSelected?'selected':''}" onclick="app.selectCal('${dk}')"><div class="cal-num">${d.getDate()}</div>${aps.slice(0,3).map(a=>`<div class="appt-dot">${esc(a.time||'—')} ${esc(client(a.clientId)?.name||'Cliente')}</div>`).join('')}${aps.length>3?`<div class="small">+${aps.length-3} más</div>`:''}</div>`}
+    const selected=state.appointments.filter(a=>a.date===calSelected && a.status==='SCHEDULED').sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    return `${pageHead('Agenda','Calendario y citas',`<button class="btn" onclick="app.openAppointment(null,'${calSelected}')">+ Cita</button>`)}
+      <div class="card calendar-wrap"><div class="cal-head"><button aria-label="Mes anterior" class="btn ghost sm" onclick="app.moveMonth(-1)">‹</button><div style="text-align:center"><h2>${calCursor.toLocaleDateString('es-MX',{month:'long',year:'numeric'})}</h2><button class="btn ghost sm" onclick="app.goToday()">Hoy</button></div><button aria-label="Mes siguiente" class="btn ghost sm" onclick="app.moveMonth(1)">›</button></div>
+      <div class="cal-grid">${['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(x=>`<div class="cal-dow">${x}</div>`).join('')}${cells}</div></div>
+      <div class="section"><div class="section-head"><h2>${fmtDate(calSelected)}</h2><span class="small">${selected.length} cita${selected.length===1?'':'s'}</span></div><div class="list">${selected.map(a=>appointmentDetailed(a)).join('')||`<div class="empty">Sin citas. <button class="btn sm" style="margin-top:12px" onclick="app.openAppointment(null,'${calSelected}')">Agregar cita</button></div>`}</div></div>`;
+  }
+  function appointmentDetailed(a){const c=client(a.clientId),l=locationOf(c,a.locationId),e=equipmentOf(l,a.equipmentId),ar=aroma(a.plannedAromaId);return `<div class="rowitem appointment-card"><div class="appointment-main"><div class="title">${esc(a.time||'Sin hora')} · ${esc(c?.name||'Cliente')}</div><div class="meta">${esc(a.type)}${l?' · '+esc(l.name):''}${e?' · '+esc(e.label||e.type):''}${ar?' · '+esc(ar.name):''}</div>${a.notes?`<div class="small">${esc(a.notes)}</div>`:''}</div><div class="appointment-actions"><button class="btn service-action" onclick="app.openService('${a.clientId}','${a.id}')">Registrar servicio</button><button class="btn secondary" onclick="app.openAppointment(null,null,'${a.id}')">Reagendar</button><button class="btn danger" onclick="app.cancelAppointment('${a.id}')">Cancelar</button></div></div>`}
+  function moveMonth(delta){calCursor.setMonth(calCursor.getMonth()+delta);render()}
+  function selectCal(d){calSelected=d;const parsed=parseDateKey(d);if(parsed.getMonth()!==calCursor.getMonth()||parsed.getFullYear()!==calCursor.getFullYear()){calCursor=parsed;calCursor.setDate(1)}render()}
+  function goToday(){calSelected=todayKey();calCursor=parseDateKey(calSelected);calCursor.setDate(1);render()}
+
+  function openModal(html,cleanup){modalCleanup=cleanup||null;document.getElementById('modal').innerHTML='<div class="modal-drag"></div>'+html;document.getElementById('modalLayer').classList.add('open');document.body.classList.add('modal-open');setTimeout(()=>{if(window.innerWidth>860)document.querySelector('#modal input, #modal select, #modal textarea')?.focus()},30)}
+  function closeModal(){document.getElementById('modalLayer').classList.remove('open');document.body.classList.remove('modal-open');document.getElementById('modal').innerHTML='';if(modalCleanup){try{modalCleanup()}catch(e){}modalCleanup=null}}
+  function modalHead(title,sub=''){return `<div class="modal-head"><div><h2>${esc(title)}</h2>${sub?`<div class="sub">${esc(sub)}</div>`:''}</div><button class="x" aria-label="Cerrar" onclick="app.closeModal()">×</button></div>`}
+  function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+  function read(id){return document.getElementById(id)?.value?.trim()||''}
+  function val(id){return document.getElementById(id)?.value??''}
+  function checkedDays(prefix){return DAY_KEYS.filter(d=>document.getElementById(prefix+d)?.classList.contains('active'))}
+  function toggleDay(id){document.getElementById(id)?.classList.toggle('active')}
+  function dayButtons(prefix,selected=[]){return `<div class="days">${DAY_KEYS.map(d=>`<button type="button" id="${prefix+d}" class="day ${selected.includes(d)?'active':''}" onclick="app.toggleDay('${prefix+d}')">${DAY_LABEL[d]}</button>`).join('')}</div>`}
+
+  function openClient(id){const existing=id?client(id):null;openModal(`${modalHead(existing?'Editar cliente':'Nuevo cliente',existing?'Guardar cambios no crea una visita.':'Solo el nombre es obligatorio.')}
+    <div class="formgrid">
+      <div class="field span2"><label>Cliente / establecimiento *</label><input id="cf_name" class="input" value="${esc(existing?.name||'')}" placeholder="Ej. Hotel Arena"></div>
+      <div class="field"><label>Contacto</label><input id="cf_contact" class="input" value="${esc(existing?.contactName||'')}"></div>
+      <div class="field"><label>Celular</label><input id="cf_phone" class="input" value="${esc(existing?.phone||'')}"></div>
+      <div class="field"><label>Email</label><input id="cf_email" class="input" type="email" value="${esc(existing?.email||'')}"></div>
+      <div class="field"><label>Dirección general</label><input id="cf_address" class="input" value="${esc(existing?.address||'')}"></div>
+      <div class="field span2"><label>Días habituales de atención</label>${dayButtons('cfd_',existing?.openDays||[]) }<div class="small">Opcional. Si no eliges ninguno, el sistema no bloqueará días al agendar.</div></div>
+      <div class="field span2"><label>Notas</label><textarea id="cf_notes">${esc(existing?.notes||'')}</textarea></div>
+      <div id="cf_err" class="span2"></div>
+    </div><div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveClient('${existing?.id||''}')">Guardar cliente</button></div>`)}
+  function saveClient(id){const name=read('cf_name');const err=document.getElementById('cf_err');if(!name){err.innerHTML='<div class="notice danger">Escribe el nombre del cliente.</div>';return}const now=new Date().toISOString();const payload={name,contactName:read('cf_contact'),phone:read('cf_phone'),email:read('cf_email'),address:read('cf_address'),notes:read('cf_notes'),openDays:checkedDays('cfd_')};if(id){const c=client(id);if(!c)return;c.name=payload.name;c.contactName=payload.contactName;c.phone=payload.phone;c.email=payload.email;c.address=payload.address;c.notes=payload.notes;c.openDays=payload.openDays;c.updatedAt=now}else{state.clients.push({id:uid('cl'),...payload,createdAt:now,updatedAt:now,locations:[]})}saveState();closeModal();render();toast(id?'Cliente actualizado sin crear visita':'Cliente creado')}
+
+  function openAroma(id){const a=id?aroma(id):null;openModal(`${modalHead(a?'Editar aroma':'Nuevo aroma','Agregar o editar aromas no crea visitas.')}
+    <div class="formgrid"><div class="field span2"><label>Nombre del aroma *</label><input class="input" id="af_name" value="${esc(a?.name||'')}" placeholder="Ej. Higo & Cedro"></div><div class="field span2"><label>Notas</label><textarea id="af_notes">${esc(a?.notes||'')}</textarea></div><div class="field span2"><label><input type="checkbox" id="af_active" ${a?.active===false?'':'checked'}> Aroma activo</label></div><div id="af_err" class="span2"></div></div>
+    <div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveAroma('${a?.id||''}')">Guardar aroma</button></div>`)}
+  function saveAroma(id){const name=read('af_name');const err=document.getElementById('af_err');if(!name){err.innerHTML='<div class="notice danger">Escribe el nombre del aroma.</div>';return}if(state.aromas.some(a=>a.id!==id&&a.name.trim().toLowerCase()===name.toLowerCase())){err.innerHTML='<div class="notice danger">Ya existe un aroma con ese nombre.</div>';return}if(id){const a=aroma(id);a.name=name;a.notes=read('af_notes');a.active=document.getElementById('af_active').checked}else{state.aromas.push({id:uid('ar'),name,notes:read('af_notes'),active:document.getElementById('af_active').checked,createdAt:new Date().toISOString()})}saveState();closeModal();render();toast(id?'Aroma actualizado':'Aroma agregado')}
+
+  function openLocation(clientId,locId){const c=client(clientId),l=locId?locationOf(c,locId):null;if(!c)return;openModal(`${modalHead(l?'Editar locación':'Nueva locación','Modificar una locación no registra una visita.')}
+    <div class="formgrid"><div class="field span2"><label>Nombre *</label><input class="input" id="lf_name" value="${esc(l?.name||'')}" placeholder="Ej. Lobby"></div><div class="field span2"><label>Dirección / referencia</label><input class="input" id="lf_address" value="${esc(l?.address||'')}"></div><div id="lf_err" class="span2"></div></div>
+    <div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveLocation('${clientId}','${l?.id||''}')">Guardar locación</button></div>`)}
+  function saveLocation(clientId,locId){const c=client(clientId),name=read('lf_name'),err=document.getElementById('lf_err');if(!name){err.innerHTML='<div class="notice danger">Escribe un nombre para la locación.</div>';return}if(locId){const l=locationOf(c,locId);l.name=name;l.address=read('lf_address')}else c.locations.push({id:uid('loc'),name,address:read('lf_address'),equipments:[]});c.updatedAt=new Date().toISOString();saveState();closeModal();render();toast(locId?'Locación actualizada sin crear visita':'Locación agregada')}
+  function removeLocation(clientId,locId){const c=client(clientId),l=locationOf(c,locId);if(!c||!l)return;const ap=state.appointments.filter(a=>a.clientId===clientId&&a.locationId===locId&&a.status==='SCHEDULED').length;const vi=state.visits.filter(v=>v.clientId===clientId&&v.locationId===locId).length;if(vi){toast('No se puede eliminar: la locación tiene historial de visitas. Edítala o renómbrala.');return}const msg=`Eliminar “${l.name}” quitará también ${l.equipments.length} equipo(s). ${ap?`Se cancelarán ${ap} cita(s) pendiente(s).`:''}\n\n¿Continuar?`;if(!confirm(msg))return;c.locations=c.locations.filter(x=>x.id!==locId);state.appointments.forEach(a=>{if(a.clientId===clientId&&a.locationId===locId&&a.status==='SCHEDULED')a.status='CANCELLED'});saveState();render();toast('Locación eliminada')}
+
+  function aromaOptions(selected,includeBlank=true){return `${includeBlank?`<option value="">Sin definir</option>`:''}${state.aromas.filter(a=>a.active||a.id===selected).sort((a,b)=>a.name.localeCompare(b.name,'es')).map(a=>`<option value="${a.id}" ${a.id===selected?'selected':''}>${esc(a.name)}${a.active?'':' (inactivo)'}</option>`).join('')}`}
+  function openEquipment(clientId,locId,eqId){const c=client(clientId),l=locationOf(c,locId),e=eqId?equipmentOf(l,eqId):null;if(!l)return;openModal(`${modalHead(e?'Editar equipo':'Nuevo equipo','El aroma es opcional; no se preselecciona en una primera instalación.')}
+    <div class="formgrid"><div class="field"><label>Tipo *</label><select id="ef_type"><option ${e?.type==='Grande'?'selected':''}>Grande</option><option ${e?.type==='Pequeño'?'selected':''}>Pequeño</option></select></div><div class="field"><label>Nombre / referencia</label><input id="ef_label" class="input" value="${esc(e?.label||'')}" placeholder="Ej. Difusor recepción"></div><div class="field span2"><label>Aroma previsto (opcional)</label><select id="ef_planned">${aromaOptions(e?.plannedAromaId||null,true)}</select><div class="small">Esto es planeación, no una visita ni una instalación.</div></div></div>
+    <div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveEquipment('${clientId}','${locId}','${e?.id||''}')">Guardar equipo</button></div>`)}
+  function saveEquipment(clientId,locId,eqId){const c=client(clientId),l=locationOf(c,locId);if(!l)return;const data={type:val('ef_type'),label:read('ef_label'),plannedAromaId:val('ef_planned')||null};if(eqId){const e=equipmentOf(l,eqId);e.type=data.type;e.label=data.label;e.plannedAromaId=data.plannedAromaId}else l.equipments.push({id:uid('eq'),...data,lastInstalledAromaId:null,lastInstalledAt:null});c.updatedAt=new Date().toISOString();saveState();closeModal();render();toast(eqId?'Equipo actualizado sin crear visita':'Equipo agregado')}
+
+  function openAppointment(clientId=null,date=null,appointmentId=null){
+    const existing=appointmentId?state.appointments.find(a=>a.id===appointmentId):null;
+    if(existing && existing.status!=='SCHEDULED'){toast('Solo se pueden editar citas pendientes');return}
+    const cid=existing?.clientId||clientId||state.clients[0]?.id||'';
+    if(!state.clients.length){toast('Primero agrega un cliente');openClient();return}
+    openModal(`${modalHead(existing?'Editar / Reagendar cita':'Nueva cita',existing?'Cambiar una cita no crea una visita.':'Programar una cita no genera una visita.')}
+    <div class="formgrid"><div class="field span2"><label>Cliente *</label><select id="ap_client" onchange="app.refreshAppointmentFields()">${state.clients.map(c=>`<option value="${c.id}" ${c.id===cid?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="field"><label>Fecha *</label><input class="input" id="ap_date" type="date" value="${esc(existing?.date||date||todayKey())}" onchange="app.checkAppointmentDay()"></div><div class="field"><label>Hora</label><input class="input" id="ap_time" type="time" value="${esc(existing?.time||'10:00')}"></div><div class="field"><label>Tipo</label><select id="ap_type"><option ${existing?.type==='Reposición'?'selected':''}>Reposición</option><option ${existing?.type==='Instalación'?'selected':''}>Instalación</option><option ${existing?.type==='Revisión'?'selected':''}>Revisión</option></select></div><div class="field"><label>Locación</label><select id="ap_location" onchange="app.refreshAppointmentEquipment()"></select></div><div class="field"><label>Equipo</label><select id="ap_equipment"></select></div><div class="field"><label>Aroma previsto</label><select id="ap_aroma">${aromaOptions(existing?.plannedAromaId||null,true)}</select></div><div class="field span2"><label>Notas</label><textarea id="ap_notes">${esc(existing?.notes||'')}</textarea></div><div id="ap_notice" class="span2"></div></div>
+    <div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveAppointment('${existing?.id||''}')">${existing?'Guardar cambios':'Guardar cita'}</button></div>`);
+    refreshAppointmentFields(existing?.locationId||null,existing?.equipmentId||null);checkAppointmentDay()
+  }
+  function refreshAppointmentFields(selectedLoc=null,selectedEq=null){const c=client(val('ap_client'));const locSel=document.getElementById('ap_location');if(!locSel)return;locSel.innerHTML=`<option value="">Sin locación definida</option>`+(c?.locations||[]).map(l=>`<option value="${l.id}" ${l.id===selectedLoc?'selected':''}>${esc(l.name)}</option>`).join('');refreshAppointmentEquipment(selectedEq);checkAppointmentDay()}
+  function refreshAppointmentEquipment(selectedEq=null){const c=client(val('ap_client')),l=locationOf(c,val('ap_location'));const sel=document.getElementById('ap_equipment');if(sel)sel.innerHTML=`<option value="">Sin equipo definido</option>`+(l?.equipments||[]).map(e=>`<option value="${e.id}" ${e.id===selectedEq?'selected':''}>${esc(e.label||e.type)}</option>`).join('')}
+  function checkAppointmentDay(){const c=client(val('ap_client')),date=val('ap_date'),box=document.getElementById('ap_notice');if(!box||!c||!date)return;if(isOpenOn(c,date)){box.innerHTML='<div class="notice ok">Día disponible según la configuración del cliente.</div>';return}const next=nextOpenDate(c,shiftDate(date,1));box.innerHTML=`<div class="notice">${esc(c.name)} está configurado como cerrado el ${DAY_FULL[dayKeyFromDate(date)]}.${next?` Siguiente día disponible: <b>${fmtDate(next)}</b>. <button type="button" class="btn secondary sm" style="margin-left:6px" onclick="app.useAppointmentDate('${next}')">Usar fecha</button>`:''}</div>`}
+  function useAppointmentDate(d){document.getElementById('ap_date').value=d;checkAppointmentDay()}
+  function saveAppointment(id=''){const cid=val('ap_client'),date=val('ap_date'),time=val('ap_time');const c=client(cid),box=document.getElementById('ap_notice');if(!c||!date){box.innerHTML='<div class="notice danger">Selecciona cliente y fecha.</div>';return}if(!isOpenOn(c,date)){const next=nextOpenDate(c,shiftDate(date,1));box.innerHTML=`<div class="notice danger">No se guardó. El cliente está cerrado ese día.${next?` Siguiente día disponible: <b>${fmtDate(next)}</b>. <button type="button" class="btn secondary sm" style="margin-left:6px" onclick="app.useAppointmentDate('${next}')">Usar fecha</button>`:''}</div>`;return}
+    const locId=val('ap_location')||null,eqId=val('ap_equipment')||null;const l=locId?locationOf(c,locId):null,e=eqId?equipmentOf(l,eqId):null;
+    if(locId&&!l){box.innerHTML='<div class="notice danger">La locación seleccionada ya no pertenece al cliente.</div>';return}if(eqId&&!e){box.innerHTML='<div class="notice danger">El equipo seleccionado ya no pertenece a la locación.</div>';return}
+    const duplicate=state.appointments.find(a=>a.id!==id&&a.status==='SCHEDULED'&&a.clientId===cid&&a.date===date&&(a.time||'')===(time||''));if(duplicate){box.innerHTML='<div class="notice danger">Ya existe otra cita pendiente para este cliente a la misma fecha y hora.</div>';return}
+    const data={clientId:cid,locationId:locId,equipmentId:eqId,date,time,type:val('ap_type'),plannedAromaId:val('ap_aroma')||null,notes:read('ap_notes')};
+    if(id){const a=state.appointments.find(x=>x.id===id);if(!a||a.status!=='SCHEDULED'){box.innerHTML='<div class="notice danger">La cita ya no está disponible para editar.</div>';return}Object.assign(a,data,{updatedAt:new Date().toISOString()})}
+    else state.appointments.push({id:uid('ap'),...data,status:'SCHEDULED',createdAt:new Date().toISOString()});
+    saveState();calSelected=date;calCursor=parseDateKey(date);calCursor.setDate(1);closeModal();render();toast(id?'Cita actualizada / reagendada sin crear visita':'Cita programada; no se creó una visita')
+  }
+  function cancelAppointment(id){const a=state.appointments.find(x=>x.id===id);if(!a||a.status!=='SCHEDULED'){toast('La cita ya no está pendiente');return}if(!confirm('¿Cancelar esta cita?'))return;a.status='CANCELLED';a.updatedAt=new Date().toISOString();saveState();render();toast('Cita cancelada')}
+
+
+  function openService(clientId,appointmentId=null){const c=client(clientId);if(!c)return;const ap=appointmentId?state.appointments.find(a=>a.id===appointmentId):null;if(appointmentId&&(!ap||ap.status!=='SCHEDULED'||ap.clientId!==clientId)){toast('La cita ya no está disponible para registrar servicio');return}openModal(`${modalHead('Registrar servicio','Guarda el servicio realizado en el historial.')}
+    <div class="formgrid"><div class="field"><label>Fecha *</label><input id="sv_date" class="input" type="date" value="${esc(ap?.date||todayKey())}"></div><div class="field"><label>Hora</label><input id="sv_time" class="input" type="time" value="${esc(ap?.time||'10:00')}"></div><div class="field"><label>Tipo</label><select id="sv_type"><option ${ap?.type==='Instalación'?'selected':''}>Instalación</option><option ${ap?.type==='Reposición'?'selected':''}>Reposición</option><option ${ap?.type==='Revisión'?'selected':''}>Revisión</option></select></div><div class="field"><label>Locación</label><select id="sv_location" onchange="app.refreshServiceEquipment('${clientId}')"><option value="">Sin locación</option>${c.locations.map(l=>`<option value="${l.id}" ${l.id===ap?.locationId?'selected':''}>${esc(l.name)}</option>`).join('')}</select></div><div class="field"><label>Equipo</label><select id="sv_equipment"></select></div><div class="field"><label>Aroma instalado</label><select id="sv_aroma">${aromaOptions(ap?.plannedAromaId||null,true)}</select><div class="small">Puede quedar “Sin definir”.</div></div><div class="field span2"><label>Notas</label><textarea id="sv_notes">${esc(ap?.notes||'')}</textarea></div><div id="sv_err" class="span2"></div></div>
+    <div class="actions"><button class="btn secondary" onclick="app.closeModal()">Cancelar</button><button class="btn" onclick="app.saveService('${clientId}','${appointmentId||''}')">Guardar visita</button></div>`);refreshServiceEquipment(clientId,ap?.equipmentId||null)}
+  function refreshServiceEquipment(clientId,selected=null){const c=client(clientId),l=locationOf(c,val('sv_location'));const sel=document.getElementById('sv_equipment');if(sel)sel.innerHTML=`<option value="">Sin equipo</option>`+(l?.equipments||[]).map(e=>`<option value="${e.id}" ${e.id===selected?'selected':''}>${esc(e.label||e.type)}</option>`).join('')}
+  function saveService(clientId,appointmentId){const c=client(clientId),date=val('sv_date'),locId=val('sv_location')||null,eqId=val('sv_equipment')||null,arId=val('sv_aroma')||null,err=document.getElementById('sv_err');if(!c){return}if(!date){err.innerHTML='<div class="notice danger">Selecciona la fecha del servicio.</div>';return}if(appointmentId){const ap=state.appointments.find(a=>a.id===appointmentId);if(!ap||ap.status!=='SCHEDULED'||ap.clientId!==clientId){err.innerHTML='<div class="notice danger">La cita cambió o ya no está pendiente. Cierra y vuelve a abrirla.</div>';return}}
+    const l=locId?locationOf(c,locId):null,e=eqId?equipmentOf(l,eqId):null;if(locId&&!l){err.innerHTML='<div class="notice danger">La locación seleccionada ya no pertenece al cliente.</div>';return}if(eqId&&!e){err.innerHTML='<div class="notice danger">El equipo seleccionado ya no pertenece a la locación.</div>';return}if(e?.lastInstalledAt && date<e.lastInstalledAt){err.innerHTML=`<div class="notice danger">La fecha del servicio (${fmtDate(date)}) no puede ser anterior a la última instalación registrada (${fmtDate(e.lastInstalledAt)}).</div>`;return}
+    state.visits.push({id:uid('vi'),clientId,locationId:locId,equipmentId:eqId,date,time:val('sv_time'),type:val('sv_type'),aromaId:arId,notes:read('sv_notes'),createdAt:new Date().toISOString()});if(e&&arId){e.lastInstalledAromaId=arId;e.lastInstalledAt=date;e.plannedAromaId=null}if(appointmentId){const ap=state.appointments.find(a=>a.id===appointmentId);ap.status='COMPLETED';ap.completedAt=new Date().toISOString()}saveState();closeModal();route={view:'client',clientId};render();toast('Visita registrada')}
+
+
+  function exportBackup(){const payload={app:'Essenzia',schemaVersion:1,exportedAt:new Date().toISOString(),data:state};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Essenzia-respaldo-${todayKey()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Respaldo descargado; guárdalo en un lugar privado')}
+  function chooseBackup(){document.getElementById('backupFileInput').click()}
+  async function restoreBackup(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;try{const backup=JSON.parse(await file.text());const incoming=backup?.data;if(backup?.app!=='Essenzia'||!incoming||!Array.isArray(incoming.clients)||!Array.isArray(incoming.aromas)||!Array.isArray(incoming.appointments)||!Array.isArray(incoming.visits)){throw new Error('El archivo no parece ser un respaldo válido de Essenzia.')}if(!confirm('Restaurar este respaldo reemplazará todos los datos actuales de esta instalación. ¿Continuar?'))return;normalizeState(incoming);const previous=state;state={...incoming,version:'0.2.1-piloto'};if(!saveState()){state=previous;render();toast('No se pudo guardar el respaldo en este dispositivo');return}route={view:'home'};render();toast('Respaldo restaurado')}catch(error){toast(error.message||'No se pudo leer el respaldo')}}
+  function updateClock(){const s=new Date().toLocaleString('es-MX',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});const el=document.getElementById('clockSide');if(el)el.textContent=s}
+  setInterval(updateClock,1000);updateClock();
+  window.app={nav,render,setClientSearch,openClient,saveClient,openAroma,saveAroma,openLocation,saveLocation,removeLocation,openEquipment,saveEquipment,openAppointment,refreshAppointmentFields,refreshAppointmentEquipment,checkAppointmentDay,useAppointmentDate,saveAppointment,cancelAppointment,openService,refreshServiceEquipment,saveService,moveMonth,selectCal,goToday,closeModal,toggleDay,exportBackup,chooseBackup,restoreBackup};
+  window.__essenziaTest={getState:()=>JSON.parse(JSON.stringify(state)),setRoute:r=>{route=r;render()},visitCountForClient,storageKey:STORAGE_KEY,persistenceAvailable:()=>persistenceAvailable,todayKey};
+  render();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.warn('No se pudo registrar el service worker:', err);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
