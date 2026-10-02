@@ -1,4 +1,4 @@
-const CACHE_NAME = 'essenzia-v0.2.3-pilot-1';
+const CACHE_NAME = 'essenzia-v0.2.4-pilot-1';
 const APP_SHELL = [
   './',
   './index.html',
