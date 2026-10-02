@@ -10,7 +10,7 @@
 <meta name="format-detection" content="telephone=no" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="apple-touch-icon" href="./icon-180.png" />
-<title>Essenzia v0.2.1-piloto — PWA</title>
+<title>Essenzia v0.2.2-piloto — PWA</title>
 <style>
   :root{
     --bg:#f7f5f0;--panel:#ffffff;--ink:#171716;--muted:#6e6b63;--line:#e6e1d7;
@@ -161,7 +161,7 @@
 <input class="fallback-tabs" type="radio" name="fallback-view" id="fb-aromas">
 <div class="app">
   <aside class="sidebar">
-    <div><div class="brand">ESSENZIA</div><div class="version">v0.2.1-piloto · PWA</div></div>
+    <div><div class="brand">ESSENZIA</div><div class="version">v0.2.2-piloto · PWA</div></div>
     <div class="nav" id="sideNav">
       <label for="fb-home">Inicio</label><label for="fb-clients">Clientes</label><label for="fb-calendar">Agenda</label><label for="fb-aromas">Aromas</label>
     </div>
@@ -170,10 +170,10 @@
   <main class="main fallback-only" id="main">
     <section class="fallback-screen" id="fallback-home">
       <div class="notice compat-note"><b>Modo de vista compatible.</b> Este visor no está ejecutando JavaScript. Puedes revisar y navegar la interfaz aquí; crear, editar y guardar datos requiere abrir el mismo HTML en un navegador que permita scripts.</div>
-      <div class="topbar"><div><h1>Inicio <span class="audit-badge">v0.2.1-piloto</span></h1><div class="sub">Resumen operativo de Essenzia</div></div></div>
+      <div class="topbar"><div><h1>Inicio <span class="audit-badge">v0.2.2-piloto</span></h1><div class="sub">Resumen operativo de Essenzia</div></div></div>
       <div class="grid cols-3">
         <div class="card"><div class="metric-label">Clientes</div><div class="metric">0</div><label class="btn ghost sm" for="fb-clients">Ver clientes</label></div>
-        <div class="card"><div class="metric-label">Aromas activos</div><div class="metric">0</div><label class="btn ghost sm" for="fb-aromas">Ver aromas</label></div>
+        <div class="card"><div class="metric-label">Aromas activos</div><div class="metric">10</div><label class="btn ghost sm" for="fb-aromas">Ver aromas</label></div>
         <div class="card"><div class="metric-label">Citas</div><div class="metric">0</div><label class="btn ghost sm" for="fb-calendar">Ver calendario</label></div>
       </div>
       <div class="section card"><h3>Regla de integridad</h3><div class="meta">Editar cliente, contacto, locación, equipo o aroma <b>no crea una visita</b>. Una visita solo nace desde “Registrar servicio”.</div></div>
@@ -205,7 +205,7 @@
     <section class="fallback-screen" id="fallback-aromas">
       <div class="notice compat-note"><b>Aromas independientes.</b> Se pueden administrar sin generar visitas. El guardado funciona en el modo funcional con JavaScript; esta vista previa solo permite revisar la interfaz.</div>
       <div class="topbar"><div><h1>Aromas</h1><div class="sub">Catálogo escalable e independiente de clientes y servicios</div></div></div>
-      <div class="empty">Aún no hay aromas. Agrégalos desde la app funcional.</div>
+      <div class="list"><div class="rowitem"><div><div class="title">Té Blanco</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Madera Búlgara</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Bergamota</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Santal</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Tu Momento</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">King</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Crystal Petals</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Lima Limón</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Frutos Rojos</div><div class="meta"></div></div><span class="pill ok">Activo</span></div><div class="rowitem"><div><div class="title">Sándalo</div><div class="meta"></div></div><span class="pill ok">Activo</span></div></div>
       <details class="card fallback-form"><summary>+ Nuevo aroma</summary><div class="formgrid" style="margin-top:12px"><div class="field"><label>Nombre *</label><input class="input" placeholder="Nombre del aroma"></div><div class="field"><label>Notas</label><input class="input" placeholder="Descripción breve"></div></div><div class="actions"><button class="btn fallback-disabled" disabled>Guardar aroma</button></div></details>
     </section>
   </main>
@@ -217,7 +217,7 @@
 <script>
 (() => {
   'use strict';
-  const STORAGE_KEY='essenzia_v0_2_1_pilot';
+  const STORAGE_KEY='essenzia_v0_2_1_pilot'; // Se conserva para no perder los datos ya guardados en la prueba.
   let persistenceAvailable=true;
   let memorySnapshot=null;
   const DAY_KEYS=['MON','TUE','WED','THU','FRI','SAT','SUN'];
@@ -237,7 +237,12 @@
   function fmtDate(s){if(!s)return '—';return parseDateKey(s).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}
   function dayKeyFromDate(s){const d=typeof s==='string'?parseDateKey(s):new Date(s);return ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]}
   function todayKey(){return dateKey(new Date())}
-  function seed(){return {version:'0.2.1-piloto',clients:[],aromas:[],appointments:[],visits:[],meta:{createdAt:new Date().toISOString()}}}
+  const DEFAULT_AROMAS_VERSION='liz-aromas-v1';
+  const DEFAULT_AROMAS=[
+    ['ar_seed_te_blanco','Té Blanco'],['ar_seed_madera_bulgara','Madera Búlgara'],['ar_seed_bergamota','Bergamota'],['ar_seed_santal','Santal'],['ar_seed_tu_momento','Tu Momento'],['ar_seed_king','King'],['ar_seed_crystal_petals','Crystal Petals'],['ar_seed_lima_limon','Lima Limón'],['ar_seed_frutos_rojos','Frutos Rojos'],['ar_seed_sandalo','Sándalo']
+  ];
+  function applyDefaultAromas(s){s.meta ||= {};if(s.meta.defaultAromasVersion===DEFAULT_AROMAS_VERSION)return false;const existing=new Set(s.aromas.map(a=>(a.name||'').trim().toLocaleLowerCase('es-MX')));const now=new Date().toISOString();for(const [id,name] of DEFAULT_AROMAS){if(!existing.has(name.toLocaleLowerCase('es-MX')))s.aromas.push({id,name,notes:'',active:true,createdAt:now})}s.meta.defaultAromasVersion=DEFAULT_AROMAS_VERSION;return true}
+  function seed(){const s={version:'0.2.2-piloto',clients:[],aromas:[],appointments:[],visits:[],meta:{createdAt:new Date().toISOString()}};applyDefaultAromas(s);return s}
   function shiftDate(base,days){const d=parseDateKey(base);d.setDate(d.getDate()+days);return dateKey(d)}
   function storageRead(){
     if(!persistenceAvailable)return memorySnapshot;
@@ -249,11 +254,11 @@
     try{localStorage.setItem(STORAGE_KEY,value);return true}catch(e){persistenceAvailable=false;console.warn('No se pudo guardar en almacenamiento local; los cambios seguirán disponibles durante esta sesión.',e);return false}
   }
   function loadState(){
-    try{const raw=storageRead();if(raw){const s=JSON.parse(raw);normalizeState(s);return s}}catch(e){console.warn('No se pudo recuperar el estado guardado.',e)}
+    try{const raw=storageRead();if(raw){const s=JSON.parse(raw);normalizeState(s);if(applyDefaultAromas(s))storageWrite(JSON.stringify(s));return s}}catch(e){console.warn('No se pudo recuperar el estado guardado.',e)}
     const s=seed();storageWrite(JSON.stringify(s));return s;
   }
   function normalizeState(s){s.clients ||= [];s.aromas ||= [];s.appointments ||= [];s.visits ||= [];for(const c of s.clients){c.openDays ||= [];c.locations ||= [];for(const l of c.locations){l.equipments ||= []}}}
-  function saveState(){state.version='0.2.1-piloto';return storageWrite(JSON.stringify(state))}
+  function saveState(){state.version='0.2.2-piloto';return storageWrite(JSON.stringify(state))}
   function client(id){return state.clients.find(x=>x.id===id)}
   function aroma(id){return state.aromas.find(x=>x.id===id)}
   function locationOf(c,id){return c?.locations.find(x=>x.id===id)}
@@ -411,7 +416,7 @@
 
   function exportBackup(){const payload={app:'Essenzia',schemaVersion:1,exportedAt:new Date().toISOString(),data:state};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Essenzia-respaldo-${todayKey()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Respaldo descargado; guárdalo en un lugar privado')}
   function chooseBackup(){document.getElementById('backupFileInput').click()}
-  async function restoreBackup(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;try{const backup=JSON.parse(await file.text());const incoming=backup?.data;if(backup?.app!=='Essenzia'||!incoming||!Array.isArray(incoming.clients)||!Array.isArray(incoming.aromas)||!Array.isArray(incoming.appointments)||!Array.isArray(incoming.visits)){throw new Error('El archivo no parece ser un respaldo válido de Essenzia.')}if(!confirm('Restaurar este respaldo reemplazará todos los datos actuales de esta instalación. ¿Continuar?'))return;normalizeState(incoming);const previous=state;state={...incoming,version:'0.2.1-piloto'};if(!saveState()){state=previous;render();toast('No se pudo guardar el respaldo en este dispositivo');return}route={view:'home'};render();toast('Respaldo restaurado')}catch(error){toast(error.message||'No se pudo leer el respaldo')}}
+  async function restoreBackup(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;try{const backup=JSON.parse(await file.text());const incoming=backup?.data;if(backup?.app!=='Essenzia'||!incoming||!Array.isArray(incoming.clients)||!Array.isArray(incoming.aromas)||!Array.isArray(incoming.appointments)||!Array.isArray(incoming.visits)){throw new Error('El archivo no parece ser un respaldo válido de Essenzia.')}if(!confirm('Restaurar este respaldo reemplazará todos los datos actuales de esta instalación. ¿Continuar?'))return;normalizeState(incoming);applyDefaultAromas(incoming);const previous=state;state={...incoming,version:'0.2.2-piloto'};if(!saveState()){state=previous;render();toast('No se pudo guardar el respaldo en este dispositivo');return}route={view:'home'};render();toast('Respaldo restaurado')}catch(error){toast(error.message||'No se pudo leer el respaldo')}}
   function updateClock(){const s=new Date().toLocaleString('es-MX',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});const el=document.getElementById('clockSide');if(el)el.textContent=s}
   setInterval(updateClock,1000);updateClock();
   window.app={nav,render,setClientSearch,openClient,saveClient,openAroma,saveAroma,openLocation,saveLocation,removeLocation,openEquipment,saveEquipment,openAppointment,refreshAppointmentFields,refreshAppointmentEquipment,checkAppointmentDay,useAppointmentDate,saveAppointment,cancelAppointment,openService,refreshServiceEquipment,saveService,moveMonth,selectCal,goToday,closeModal,toggleDay,exportBackup,chooseBackup,restoreBackup};
